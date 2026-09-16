@@ -4,6 +4,11 @@ import certifi
 from datetime import datetime
 from models.Launch import Launch
 
+from database.database import SessionLocal
+from database.init_db import initialize_database
+from application.launch_service import LaunchService
+# THESE NOW CALL THE DATABASE
+
 API_URL = "https://ll.thespacedevs.com/2.3.0/launches/upcoming/"
 
 
@@ -65,6 +70,8 @@ def parse_launch(data):
     )
 
 def main():
+    initialize_database() # create database
+
     data = get_upcoming_launches()
 
     # parse data
@@ -73,21 +80,32 @@ def main():
         for launch_data in data["results"]
         ]
 
-    print()
-    print("========================================")
-    print("           MISSION CONTROL")
-    print("========================================")
-    print(f"Upcoming launches found: {data['count']}")
-    print()
+    session = SessionLocal()
 
-    for launch in launches:
-        print(f"Mission: {launch.name}")
-        print(f"Launch:  {launch.launch_time}")
-        print(f"Status:  {launch.status}")
-        print(f"Provider: {launch.launch_service_provider}")
-        print(f"Rocket: {launch.rocket}")
-        print("----------------------------------------")
+    try:
+        service = LaunchService()
 
+        saved_count = service.save_launches(
+            session,
+            launches
+        )
+
+        print()
+        print("========================================")
+        print("           MISSION CONTROL")
+        print("========================================")
+        print(f"Upcoming launches found: {data['count']}")
+        print()
+
+        for launch in launches:
+            print(f"Mission: {launch.name}")
+            print(f"Launch:  {launch.launch_time}")
+            print(f"Status:  {launch.status}")
+            print(f"Provider: {launch.launch_service_provider}")
+            print(f"Rocket: {launch.rocket}")
+            print("----------------------------------------")
+    finally:
+        session.close()
 
 if __name__ == "__main__":
     main()
