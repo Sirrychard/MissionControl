@@ -12,6 +12,7 @@
     <Name>MissionControl</Name>
     <RootNamespace>MissionControl</RootNamespace>
     <InterpreterId>MSBuild|.venv|$(MSBuildProjectFullPath)</InterpreterId>
+    <TestFramework>Pytest</TestFramework>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -24,6 +25,8 @@
   <ItemGroup>
     <Compile Include="api\main.py" />
     <Compile Include="api\__init__.py" />
+    <Compile Include="api_client\launch_library_client.py" />
+    <Compile Include="api_client\__init__.py" />
     <Compile Include="application\launch_service.py" />
     <Compile Include="application\__init__.py" />
     <Compile Include="database\database.py" />
@@ -31,11 +34,13 @@
     <Compile Include="database\launch_model.py" />
     <Compile Include="database\__init__.py" />
     <Compile Include="database_test.py" />
+    <Compile Include="logging_config.py" />
     <Compile Include="MissionControl.py" />
     <Compile Include="models\Launch.py" />
     <Compile Include="models\__init__.py" />
     <Compile Include="schemas\launch_schema.py" />
     <Compile Include="schemas\__init__.py" />
+    <Compile Include="test_client.py" />
   </ItemGroup>
   <ItemGroup>
     <Interpreter Include=".venv\">
@@ -53,6 +58,7 @@
     <Folder Include="database\" />
     <Folder Include="application\" />
     <Folder Include="api\" />
+    <Folder Include="api_client\" />
     <Folder Include="schemas\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />

@@ -18,10 +18,13 @@ def main():
         print("========================================")
         print("       DATABASE TEST")
         print("========================================")
-        print(f"Launches in database: {len(launches)}")
+        print(
+            f"Launches in database: "
+            f"{len(launches)}"
+        )
         print()
 
-        for launch in launches:
+        for launch in launches[:10]:
             print(
                 f"{launch.name} | "
                 f"{launch.launch_time}"

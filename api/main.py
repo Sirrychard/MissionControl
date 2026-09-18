@@ -65,6 +65,31 @@ def get_launches(
     finally:
         session.close()
 
+# New endpoint 
+@app.get(
+    "/launches/upcoming",
+    response_model=list[LaunchSchema]
+    )
+def get_upcoming_launches(
+    limit: int = Query(
+        default=10,
+        ge=1,
+        le=100)
+    ):
+
+    session = SessionLocal()
+
+    try:
+        service = LaunchService()
+
+        launches = service.get_upcoming_launches(
+            session,
+            limit)
+
+        return launches
+    finally:
+        session.close()
+
 @app.get(
     "/launches/{launch_id}",
     response_model=LaunchSchema
@@ -92,3 +117,4 @@ def get_launch(
 
     finally:
         session.close()
+

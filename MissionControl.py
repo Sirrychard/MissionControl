@@ -1,5 +1,4 @@
-import httpx
-import certifi
+from api_client.launch_library_client import LaunchLibraryClient # My client
 
 from datetime import datetime
 from models.Launch import Launch
@@ -7,24 +6,15 @@ from models.Launch import Launch
 from database.database import SessionLocal
 from database.init_db import initialize_database
 from application.launch_service import LaunchService
+import logging
+from logging_config import configure_logging
 # THESE NOW CALL THE DATABASE
 
-API_URL = "https://ll.thespacedevs.com/2.3.0/launches/upcoming/"
+# URL NOW IN CLIENT
+logger = logging.getLogger(__name__)
 
 
-def get_upcoming_launches():
-    response = httpx.get(
-        API_URL,
-        params={
-            "limit": 10
-        },
-        timeout=10.0,
-        verify=certifi.where(),
-        trust_env=False
-    )
 
-    response.raise_for_status()
-    return response.json()
 
 # New model to receive the info and transform it into data
 def parse_launch(data):
@@ -70,15 +60,29 @@ def parse_launch(data):
     )
 
 def main():
+
+    configure_logging()
+
+    logger.info("Starting Mission Control")
+
     initialize_database() # create database
 
-    data = get_upcoming_launches()
+    logger.info("Database initialized")
+
+    client = LaunchLibraryClient() # new client to receive api
+
+    logger.info("Starting launch synchronization")
+
+    launch_data = client.get_all_upcoming_launches()
 
     # parse data
     launches = [
-        parse_launch(launch_data)
-        for launch_data in data["results"]
+        parse_launch(data)
+        for data in launch_data
         ]
+
+    logger.info(
+        f"Parsed {len(launches)} launches")
 
     session = SessionLocal()
 
@@ -90,14 +94,18 @@ def main():
             launches
         )
 
+        logger.info(
+            f"Database synchronization complete. "
+            f"New Launches: {saved_count}")
+
         print()
         print("========================================")
         print("           MISSION CONTROL")
         print("========================================")
-        print(f"Upcoming launches found: {data['count']}")
+        print(f"Upcoming launches found: {len(launch_data)}")
         print()
 
-        for launch in launches:
+        for launch in launches[:10]:
             print(f"Mission: {launch.name}")
             print(f"Launch:  {launch.launch_time}")
             print(f"Status:  {launch.status}")

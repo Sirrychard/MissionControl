@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from datetime import datetime, timezone
 
 from database.launch_model import LaunchRecord
 from models.Launch import Launch
@@ -91,7 +92,7 @@ class LaunchService:
                     f"%{provider}%"))
 
         if country:
-            query = query.filer(
+            query = query.filter(
                 LaunchRecord.country == country.upper())
 
         if search:
@@ -116,19 +117,24 @@ class LaunchService:
 
         return launches, total
 
+    # This method retrieves upcoming launches
     def get_upcoming_launches(
         self,
-        session: Session
+        session: Session,
+        limit: int = 10
     ) -> list[LaunchRecord]:
 
+        now = datetime.now(timezone.utc) # only receive new launches
         return (
             session.query(LaunchRecord)
             .filter(
-                LaunchRecord.launch_time.is_not(None)
+                LaunchRecord.launch_time.is_not(None),
+                LaunchRecord.launch_time > now
             )
             .order_by(
                 LaunchRecord.launch_time
             )
+            .limit(limit)
             .all()
         )
     def get_launch_by_id(
@@ -140,4 +146,16 @@ class LaunchService:
         return session.get(
             LaunchRecord,
             launch_id
+        )
+
+    # test
+    def get_all_launches(
+        self,
+        session: Session
+    ) -> list[LaunchRecord]:
+
+        return (
+            session.query(LaunchRecord)
+            .order_by(LaunchRecord.launch_time)
+            .all()
         )
